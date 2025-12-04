@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dashboard RFM — Donut KPIs</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #f5f7fa; --card:#ffffff; --text:#222; --muted:#6b7280; --accent:#4e79a7; --accent2:#f28e2b;
+  }
+  [data-theme='dark']{
+    --bg:#0b1220; --card:rgba(255,255,255,0.03); --text:#e6eef6; --muted:#9aa4b2;
+  }
+  *{box-sizing:border-box}
+  body{font-family:'Poppins',sans-serif;margin:0;background:var(--bg);color:var(--text);padding:20px;transition:background .25s,color .25s}
+  header{display:flex;align-items:center;justify-content:space-between;max-width:1200px;margin:0 auto 18px}
+  .title{font-size:28px;font-weight:700;text-align:center;width:100%}
+  .sub{color:var(--muted);font-size:13px;text-align:center;margin-top:6px}
+
+  .toggle{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;padding:8px 12px;border-radius:10px;cursor:pointer;border:0;transition:transform 0.2s}
+  .toggle:hover{transform:scale(1.05)}
+
+  .top-kpis{display:flex;gap:16px;max-width:1200px;margin:18px auto}
+  .kpi{flex:1;background:var(--card);padding:16px;border-radius:12px;box-shadow:0 8px 24px rgba(2,6,23,0.06);text-align:center;transition:box-shadow 0.3s}
+  .kpi:hover{box-shadow:0 12px 32px rgba(2,6,23,0.1)}
+  .kpi .label{font-size:13px;color:var(--muted);margin-bottom:6px}
+  .kpi .num{font-size:26px;font-weight:700}
+
+  .container{max-width:1200px;margin:18px auto;display:grid;grid-template-columns:1fr;gap:18px;padding-bottom:40px}
+  .card{background:var(--card);padding:18px;border-radius:14px;box-shadow:0 6px 20px rgba(2,6,23,0.06);transition:box-shadow 0.3s}
+  .card:hover{box-shadow:0 10px 30px rgba(2,6,23,0.1)}
+  .image-card img{width:100%;height:auto;border-radius:10px;display:block}
+
+  /* Donut grid */
+  .donut-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .donut-box{height:260px;display:flex;align-items:center;justify-content:center}
+
+  .clusters-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+  .cluster-card{padding:14px;border-radius:12px;color:var(--text);min-height:120px;display:flex;flex-direction:column;gap:8px;box-shadow:0 8px 20px rgba(2,6,23,0.04);transition:transform 0.2s}
+  .cluster-card:hover{transform:translateY(-5px)}
+  .cluster-title{font-weight:700}
+  .cluster-meta{color:var(--muted);font-size:13px}
+
+  .c0{background:linear-gradient(135deg, rgba(78,121,167,0.12), rgba(78,121,167,0.04)); border:1px solid rgba(78,121,167,0.08)}
+  .c1{background:linear-gradient(135deg, rgba(242,142,43,0.10), rgba(242,142,43,0.03)); border:1px solid rgba(242,142,43,0.06)}
+  .c2{background:linear-gradient(135deg, rgba(101,186,140,0.08), rgba(101,186,140,0.03)); border:1px solid rgba(101,186,140,0.06)}
+
+  @media (max-width:900px){.top-kpis{flex-direction:column}.donut-grid{grid-template-columns:1fr}.clusters-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-theme="light">
+
+<header>
+  <div style="flex:1">
+    <div class="title">Customer Segmentation Dashboard</div>
+    <div class="sub">Data tahun 2009–2011</div>
+  </div>
+  <div>
+    <button id="btnToggle" class="toggle">Enable Dark</button>
+  </div>
+</header>
+
+<!-- Top KPIs -->
+<div class="top-kpis">
+  <div class="kpi">
+    <div class="label">Banyak Pelanggan (Global)</div>
+    <div class="num" id="globalTotal">392,692</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Banyak Pelanggan (Local - UK)</div>
+    <div class="num" id="localTotal">349,203</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Banyak Pelanggan (Non-UK)</div>
+    <div class="num" id="nonUkTotal">43,489</div>
+  </div>
+</div>
+
+<!-- Comparison chart -->
+<div class="card" style="max-width:1200px;margin:18px auto;">
+  <h3>Grafik Perbandingan Pelanggan Global vs Lokal</h3>
+  <canvas id="cmpCust" style="max-height:320px"></canvas>
+</div>
+
+<div class="container">
+
+  <!-- Pie Charts (Global) -->
+  <div class="card">
+    <h3 style="text-align:center;margin:0 0 12px">Distribusi Segment Berdasarkan Cluster (Global)</h3>
+    <div class="donut-grid">
+      <div class="donut-box"><canvas id="donut_cluster0"></canvas></div>
+      <div class="donut-box"><canvas id="donut_cluster1"></canvas></div>
+      <div class="donut-box"><canvas id="donut_cluster2"></canvas></div>
+      <div class="donut-box"><canvas id="donut_allclusters"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Image card Global -->
+  <div class="card image-card">
+    <h4>Visualisasi Persebaran Data (Global)</h4>
+    <img src="global persebaran.png" alt="global plot">
+  </div>
+
+  <!-- Cluster summary Global -->
+  <div class="card">
+    <h3>Ringkasan Cluster Global</h3>
+    <div class="clusters-grid">
+      <div class="cluster-card c0">
+        <div class="cluster-title">Cluster 0 — High Value</div>
+        <div class="cluster-meta">Recency: 32d • Frequency: 5.47 • Monetary: 1.726</div>
+        <div>Pelanggan baru & sering bertransaksi — bernilai tinggi (Loyalty / Big Spenders).</div>
+      </div>
+      <div class="cluster-card c1">
+        <div class="cluster-title">Cluster 1 — At Risk</div>
+        <div class="cluster-meta">Recency: 294d • Frequency: 1.35 • Monetary: 324</div>
+        <div>Pelanggan jarang aktif, mendekati churn — perlu kampanye reaktivasi.</div>
+      </div>
+      <div class="cluster-card c2">
+        <div class="cluster-title">Cluster 2 — Dormant</div>
+        <div class="cluster-meta">Recency: 153d • Frequency: 2.21 • Monetary: 580</div>
+        <div>Pelanggan kurang aktif; berpotensi diaktifkan kembali dengan penawaran.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie Charts (Local) -->
+  <div class="card">
+    <h3 style="text-align:center;margin:0 0 12px">Distribusi Segment Berdasarkan Cluster (Local)</h3>
+    <div class="donut-grid">
+      <div class="donut-box"><canvas id="cm_cluster0"></canvas></div>
+      <div class="donut-box"><canvas id="cm_cluster1"></canvas></div>
+      <div class="donut-box"><canvas id="cm_cluster2"></canvas></div>
+      <div class="donut-box"><canvas id="cm_allclusters"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Image card Local -->
+  <div class="card image-card">
+    <h4>Visualisasi Persebaran Data (Lokal)</h4>
+    <img src="local persebaran.png" alt="lokal plot">
+  </div>
+
+  <!-- Cluster summary Local -->
+  <div class="card">
+    <h3>Ringkasan Cluster Local (UK)</h3>
+    <div class="clusters-grid">
+      <div class="cluster-card c1">
+        <div class="cluster-title">Cluster 0 — At Risk (UK)</div>
+        <div class="cluster-meta">Recency: 293d • Frequency: 1.36 • Monetary: 306</div>
+        <div>Mirip cluster berisiko — perlu tindakan retensi lokal.</div>
+      </div>
+      <div class="cluster-card c2">
+        <div class="cluster-title">Cluster 1 — Dormant (UK)</div>
+        <div class="cluster-meta">Recency: 154d • Frequency: 2.23 • Monetary: 547</div>
+        <div>Pelanggan kurang aktif; potensi reaktivasi.</div>
+      </div>
+      <div class="cluster-card c0">
+        <div class="cluster-title">Cluster 2 — High Value (UK)</div>
+        <div class="cluster-meta">Recency: 32d • Frequency: 5.41 • Monetary: 1.592</div>
+        <div>Pelanggan aktif bernilai tinggi — prioritas retensi & upsell.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* Theme toggle */
+const body = document.body;
+const btn = document.getElementById('btnToggle');
+const saved = localStorage.getItem('rfm_theme') || 'light';
+body.setAttribute('data-theme', saved);
+btn.textContent = saved === 'light' ? 'Enable Dark' : 'Enable Light';
+btn.addEventListener('click', () => {
+  const cur = body.getAttribute('data-theme') || 'light';
+  const next = cur === 'light' ? 'dark' : 'light';
+  body.setAttribute('data-theme', next);
+  localStorage.setItem('rfm_theme', next);
+  btn.textContent = next === 'light' ? 'Enable Dark' : 'Enable Light';
+  // Update chart colors
+  updateChartColors();
+});
+
+/* Set top KPI numbers */
+const globalTotal = 392692, localTotal = 349203;
+document.getElementById('globalTotal').textContent = globalTotal.toLocaleString();
+document.getElementById('localTotal').textContent = localTotal.toLocaleString();
+document.getElementById('nonUkTotal').textContent = (globalTotal - localTotal).toLocaleString();
+
+/* Data for pie charts */
+const segLabels = ["At Risk", "Big Spenders", "Loyalty", "Need Attention", "New Customer"];
+const colors = ["#e15759", "#f28e2b", "#4e79a7", "#76b7b2", "#59a14f"];
+
+const C0G = [110, 231, 1471, 864, 230];
+const C1G = [298, 20, 15, 293, 0];
+const C2G = [387, 66, 146, 207, 0];
+const ALLG = C0G.map((v, i) => v + C1G[i] + C2G[i]);
+
+const C0L = [265, 20, 15, 258, 0];
+const C1L = [347, 57, 140, 289, 0];
+const C2L = [114, 208, 1329, 766, 212];
+const ALLL = C0L.map((v, i) => v + C1L[i] + C2L[i]);
+
+/* Helper: build a pie chart */
+function makeDonut(canvasId, dataArr, title) {
+  const total = dataArr.reduce((a, b) => a + b, 0);
+  const labelsWithPercents = segLabels.map((s, i) => `${s} — ${((dataArr[i] / total) * 100).toFixed(1)}%`);
+  const el = document.getElementById(canvasId);
+  if (!el) return;
+  const ctx = el.getContext('2d');
+
+  // Destroy previous chart instance if exists
+  if (ctx._chartInstance) { ctx._chartInstance.destroy(); }
+
+  ctx._chartInstance = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labelsWithPercents,
+      datasets: [{ data: dataArr, backgroundColor: colors }]
+    },
+    options: {
+      plugins: {
+        title: { display: true, text: title, color: getComputedStyle(document.body).color },
+        legend: { position: 'bottom', labels: { color: getComputedStyle(document.body).color, boxHeight: 10 } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const idx = ctx.dataIndex;
+              const val = ctx.dataset.data[idx];
+              const pct = (val / total * 100).toFixed(1);
+              return `${segLabels[idx]} — ${val} (${pct}%)`;
+            }
+          }
+        }
+      },
+      maintainAspectRatio: false
+    }
+  });
+}
+
+/* Comparison bar chart */
+function makeComparison() {
+  const el = document.getElementById('cmpCust');
+  if (!el) return;
+  const ctx = el.getContext('2d');
+  if (ctx._chartInstance) ctx._chartInstance.destroy();
+  ctx._chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Global', 'Local', 'Non-UK'],
+      datasets: [{ label: 'Jumlah Pelanggan', data: [globalTotal, localTotal, globalTotal - localTotal], backgroundColor: ['#4e79a7', '#f28e2b', '#e15759'] }]
+    },
+    options: { maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+/* Update chart colors for theme change */
+function updateChartColors() {
+  const textColor = getComputedStyle(document.body).color;
+  const chartIds = ['donut_cluster0', 'donut_cluster1', 'donut_cluster2', 'donut_allclusters', 'cm_cluster0', 'cm_cluster1', 'cm_cluster2', 'cm_allclusters'];
+  chartIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el._chartInstance) {
+      el._chartInstance.options.plugins.title.color = textColor;
+      el._chartInstance.options.plugins.legend.labels.color = textColor;
+      el._chartInstance.update();
+    }
+  });
+}
+
+/* Render all charts when DOM ready */
+document.addEventListener('DOMContentLoaded', () => {
+  // Global pies
+  makeDonut('donut_cluster0', C0G, 'Cluster 0 — Global');
+  makeDonut('donut_cluster1', C1G, 'Cluster 1 — Global');
+  makeDonut('donut_cluster2', C2G, 'Cluster 2 — Global');
+  makeDonut('donut_allclusters', ALLG, 'All Clusters — Global');
+
+  // Local pies
+  makeDonut('cm_cluster0', C0L, 'Cluster 0 — Local');
+  makeDonut('cm_cluster1', C1L, 'Cluster 1 — Local');
+  makeDonut('cm_cluster2', C2L, 'Cluster 2 — Local');
+  makeDonut('cm_allclusters', ALLL, 'All Clusters — Local');
+
+  // Comparison chart
+  makeComparison();
+});
+</script>
+
+</body>
+</html>
