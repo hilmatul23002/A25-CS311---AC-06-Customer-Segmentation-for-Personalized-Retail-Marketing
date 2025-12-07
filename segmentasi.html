@@ -366,7 +366,7 @@
     <div class="card-body">
       <div class="metrics-row">
         <div class="metric"><small>Recency</small><strong>32</strong></div>
-        <div class="metric"><small>Frequency</small><strong>5,47</strong></div>
+        <div class="metric"><small>Frequency</small><strong>5.47</strong></div>
         <div class="metric"><small>Monetary</small><strong>1726</strong></div>
       </div>
       <div class="summary-text">
@@ -522,7 +522,7 @@ let chartCmpCust, chartPieGlobal, chartPieLocal; // <-- simpan objek grafik
 
 async function loadGlobal() {
   try {
-    const res = await fetch("hasil_rfm_kmeans.csv");
+    const res = await fetch("/hasil_rfm_kmeans.csv");
     if (!res.ok) throw new Error("CSV Global not found");
     return parseCSV(await res.text());
   } catch (e) {
@@ -533,7 +533,7 @@ async function loadGlobal() {
 
 async function loadLocal() {
   try {
-    const res = await fetch("hasil_rfm_kmeans_lokal.csv");
+    const res = await fetch("/hasil_rfm_kmeans_lokal.csv");
     if (!res.ok) throw new Error("CSV Local not found");
     return parseCSV(await res.text());
   } catch (e) {
@@ -682,3 +682,4 @@ document.getElementById("legend_local").innerHTML = `
 
 </body>
 </html>
+
