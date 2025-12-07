@@ -518,18 +518,12 @@
 <script>
 Chart.register(ChartDataLabels);
 
-let chartCmpCust, chartPieGlobal, chartPieLocal; // <-- simpan objek grafik
-
-<script>
-Chart.register(ChartDataLabels);
-
-let chartCmpCust, chartPieGlobal, chartPieLocal;
-
 async function loadGlobal() {
   try {
-    // Mengubah path menjadi relatif: './hasil_rfm_kmeans.csv'
-    const res = await fetch("/hasil_rfm_kmeans.csv"); 
-    if (!res.ok) throw new Error("Gagal memuat CSV Global. Status: " + res.status);
+    // Menggunakan Tautan Raw GitHub untuk data Global
+    const url = "https://raw.githubusercontent.com/hilmatul23002/A25-CS311-AC-06-Customer-Segmentation-for-Personalized-Retail-Marketing/main/public/hasil_rfm_kmeans.csv";
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Gagal memuat CSV Global dari Link. Status: " + res.status);
     return parseCSV(await res.text());
   } catch (e) {
     console.error("Kesalahan saat memuat data Global:", e.message);
@@ -539,16 +533,16 @@ async function loadGlobal() {
 
 async function loadLocal() {
   try {
-    // Mengubah path menjadi relatif: './hasil_rfm_kmeans_lokal.csv'
-    const res = await fetch("/hasil_rfm_kmeans_lokal.csv"); 
-    if (!res.ok) throw new Error("Gagal memuat CSV Lokal. Status: " + res.status);
+    // Menggunakan Tautan Raw GitHub untuk data Lokal
+    const url = "https://raw.githubusercontent.com/hilmatul23002/A25-CS311-AC-06-Customer-Segmentation-for-Personalized-Retail-Marketing/main/public/hasil_rfm_kmeans_lokal.csv";
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Gagal memuat CSV Lokal dari Link. Status: " + res.status);
     return parseCSV(await res.text());
   } catch (e) {
     console.error("Kesalahan saat memuat data Lokal:", e.message);
     return [];
   }
 }
-
 function parseCSV(text) {
   // Fungsi parsing tetap sama
   return text.trim().split("\n").slice(1).map(r => {
@@ -824,6 +818,7 @@ document.getElementById("legend_local").innerHTML = `
 
 </body>
 </html>
+
 
 
 
