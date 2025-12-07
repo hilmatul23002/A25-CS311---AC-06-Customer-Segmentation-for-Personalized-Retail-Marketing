@@ -522,7 +522,7 @@ let chartCmpCust, chartPieGlobal, chartPieLocal; // <-- simpan objek grafik
 
 async function loadGlobal() {
   try {
-    const res = await fetch("/hasil_rfm_kmeans.csv");
+    const res = await fetch("./hasil_rfm_kmeans.csv");
     if (!res.ok) throw new Error("CSV Global not found");
     return parseCSV(await res.text());
   } catch (e) {
@@ -533,7 +533,7 @@ async function loadGlobal() {
 
 async function loadLocal() {
   try {
-    const res = await fetch("/hasil_rfm_kmeans_lokal.csv");
+    const res = await fetch("./hasil_rfm_kmeans_lokal.csv");
     if (!res.ok) throw new Error("CSV Local not found");
     return parseCSV(await res.text());
   } catch (e) {
@@ -682,5 +682,6 @@ document.getElementById("legend_local").innerHTML = `
 
 </body>
 </html>
+
 
 
