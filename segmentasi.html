@@ -544,7 +544,7 @@ async function loadLocal() {
 
 function parseCSV(text) {
   return text.trim().split("\n").slice(1).map(r => {
-    const c = r.split(",");
+    const c = r.split(/[\t,]+/); 
     return {
       customerID: c[0],
       recency: Number(c[1]),
@@ -816,6 +816,7 @@ document.getElementById("legend_local").innerHTML = `
 
 </body>
 </html>
+
 
 
 
