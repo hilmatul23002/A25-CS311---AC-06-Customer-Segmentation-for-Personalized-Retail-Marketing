@@ -528,7 +528,7 @@ let chartCmpCust, chartPieGlobal, chartPieLocal;
 async function loadGlobal() {
   try {
     // Mengubah path menjadi relatif: './hasil_rfm_kmeans.csv'
-    const res = await fetch("./hasil_rfm_kmeans.csv"); 
+    const res = await fetch("/hasil_rfm_kmeans.csv"); 
     if (!res.ok) throw new Error("Gagal memuat CSV Global. Status: " + res.status);
     return parseCSV(await res.text());
   } catch (e) {
@@ -540,7 +540,7 @@ async function loadGlobal() {
 async function loadLocal() {
   try {
     // Mengubah path menjadi relatif: './hasil_rfm_kmeans_lokal.csv'
-    const res = await fetch("./hasil_rfm_kmeans_lokal.csv"); 
+    const res = await fetch("/hasil_rfm_kmeans_lokal.csv"); 
     if (!res.ok) throw new Error("Gagal memuat CSV Lokal. Status: " + res.status);
     return parseCSV(await res.text());
   } catch (e) {
@@ -824,6 +824,7 @@ document.getElementById("legend_local").innerHTML = `
 
 </body>
 </html>
+
 
 
 
