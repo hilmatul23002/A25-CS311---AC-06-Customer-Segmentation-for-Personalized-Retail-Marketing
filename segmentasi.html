@@ -520,29 +520,37 @@ Chart.register(ChartDataLabels);
 
 let chartCmpCust, chartPieGlobal, chartPieLocal; // <-- simpan objek grafik
 
+<script>
+Chart.register(ChartDataLabels);
+
+let chartCmpCust, chartPieGlobal, chartPieLocal;
+
 async function loadGlobal() {
   try {
-    const res = await fetch("./hasil_rfm_kmeans.csv");
-    if (!res.ok) throw new Error("CSV Global not found");
+    // Mengubah path menjadi relatif: './hasil_rfm_kmeans.csv'
+    const res = await fetch("./hasil_rfm_kmeans.csv"); 
+    if (!res.ok) throw new Error("Gagal memuat CSV Global. Status: " + res.status);
     return parseCSV(await res.text());
   } catch (e) {
-    console.error(e);
+    console.error("Kesalahan saat memuat data Global:", e.message);
     return [];
   }
 }
 
 async function loadLocal() {
   try {
-    const res = await fetch("./hasil_rfm_kmeans_lokal.csv");
-    if (!res.ok) throw new Error("CSV Local not found");
+    // Mengubah path menjadi relatif: './hasil_rfm_kmeans_lokal.csv'
+    const res = await fetch("./hasil_rfm_kmeans_lokal.csv"); 
+    if (!res.ok) throw new Error("Gagal memuat CSV Lokal. Status: " + res.status);
     return parseCSV(await res.text());
   } catch (e) {
-    console.error(e);
+    console.error("Kesalahan saat memuat data Lokal:", e.message);
     return [];
   }
 }
 
 function parseCSV(text) {
+  // Fungsi parsing tetap sama
   return text.trim().split("\n").slice(1).map(r => {
     const c = r.split(",");
     return {
@@ -555,6 +563,140 @@ function parseCSV(text) {
     };
   });
 }
+
+const globalColors = ["#7c3aed", "#ef4444", "#f59e0b"];
+const localColors = ["#ef4444", "#f59e0b", "#10b981"];
+
+Promise.all([loadGlobal(), loadLocal()]).then(([global, local]) => {
+
+  // Pastikan data berhasil dimuat sebelum mencoba menghitung total
+  if (global.length === 0 && local.length === 0) {
+    console.warn("Semua data gagal dimuat atau kosong. Chart tidak digambar.");
+    document.getElementById("globalTotal").textContent = "Error";
+    document.getElementById("localTotal").textContent = "Error";
+    return;
+  }
+
+  document.getElementById("globalTotal").textContent = global.length.toLocaleString();
+  document.getElementById("localTotal").textContent = local.length.toLocaleString();
+
+  const g = {0: 0, 1: 0, 2: 0};
+  const l = {0: 0, 1: 0, 2: 0};
+  global.forEach(x => { if (g[x.cluster] !== undefined) g[x.cluster]++; });
+  local.forEach(x => { if (l[x.cluster] !== undefined) l[x.cluster]++; });
+
+  const labelColor = getComputedStyle(document.body).color;
+
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: "bottom", labels: { usePointStyle: true, color: labelColor, padding: 20 }},
+      datalabels: { color: "#fff", font: { weight: "bold" } }
+    }
+  };
+
+  // ======= BAR PERBANDINGAN GLOBAL VS LOKAL =======
+  if (chartCmpCust) chartCmpCust.destroy();
+  chartCmpCust = new Chart(document.getElementById("cmpCust"), {
+    type: "bar",
+    data: {
+      labels: ["Loyalti", "At Risk", "Need Attention"],
+      datasets: [
+        // Pastikan mapping klaster sudah benar: Global (0=Loyalty, 1=At Risk, 2=Need Attention)
+        { label: "Global", data: [g[0], g[1], g[2]], backgroundColor: "#6366f1", borderRadius: 6 }, 
+        // Pastikan mapping klaster sudah benar: Lokal (2=Loyalty, 0=At Risk, 1=Need Attention)
+        { label: "Lokal", data: [l[2], l[0], l[1]], backgroundColor: "#10b981", borderRadius: 6 } 
+      ]
+    },
+    options: {
+      ...commonOptions,
+      plugins: { legend: { position: "top", labels: { color: labelColor }}, datalabels: { display: false }},
+      scales: {
+        y: { beginAtZero: true, ticks: { color: labelColor }},
+        x: { ticks: { color: labelColor }}
+      }
+    }
+  });
+
+  // ======= PIE GLOBAL =======
+  if (chartPieGlobal) chartPieGlobal.destroy();
+  chartPieGlobal = new Chart(document.getElementById("pie_global"), {
+    type: "pie",
+    data: {
+      labels: ["Loyalty (0)", "At Risk (1)", "Need Attention (2)"],
+      datasets: [{
+        data: [g[0], g[1], g[2]],
+        backgroundColor: globalColors,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const label = ctx.label;
+              const value = ctx.raw;
+              const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const percent = ((value / sum) * 100).toFixed(1);
+              return `${label} — ${value} pelanggan, ${percent}%`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // ======= PIE LOKAL =======
+  if (chartPieLocal) chartPieLocal.destroy();
+  chartPieLocal = new Chart(document.getElementById("pie_local"), {
+    type: "pie",
+    data: {
+      labels: ["At Risk (0)", "Need Attention (1)", "Loyalty (2)"],
+      datasets: [{
+        data: [l[0], l[1], l[2]],
+        backgroundColor: localColors,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const label = ctx.label;
+              const value = ctx.raw;
+              const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const percent = ((value / sum) * 100).toFixed(1);
+              return `${label} — ${value} pelanggan, ${percent}%`;
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  // Perbarui Legenda
+  document.getElementById("legend_global").innerHTML = `
+    <div class="legend-item"><span class="legend-color" style="background:${globalColors[0]}"></span> Loyalty (Cluster 0)</div>
+    <div class="legend-item"><span class="legend-color" style="background:${globalColors[1]}"></span> At Risk (Cluster 1)</div>
+    <div class="legend-item"><span class="legend-color" style="background:${globalColors[2]}"></span> Need Attention (Cluster 2)</div>
+  `;
+
+  document.getElementById("legend_local").innerHTML = `
+    <div class="legend-item"><span class="legend-color" style="background:${localColors[0]}"></span> At Risk (Cluster 0)</div>
+    <div class="legend-item"><span class="legend-color" style="background:${localColors[1]}"></span> Need Attention (Cluster 1)</div>
+    <div class="legend-item"><span class="legend-color" style="background:${localColors[2]}"></span> Loyalty (Cluster 2)</div>
+  `;
+})
+</script>
 
 const globalColors = ["#7c3aed", "#ef4444", "#f59e0b"];
 const localColors = ["#ef4444", "#f59e0b", "#10b981"];
@@ -682,6 +824,7 @@ document.getElementById("legend_local").innerHTML = `
 
 </body>
 </html>
+
 
 
 
