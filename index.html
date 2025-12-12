@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Segmentation Dashboard - RFM Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --bg-primary: #f8fafc;
+    --bg-card: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
+    --radius-sm: 8px;
+    
+    /* Cluster Colors */
+    --loyalty: #7c3aed;
+    --risk: #ef4444;
+    --need-attention: #f59e0b;
+    --global: #4f46e5;
+    --local: #10b981;
+    
+    /* Color variants */
+    --loyalty-light: #ede9fe;
+    --risk-light: #fee2e2;
+    --need-attention-light: #fef3c7;
+    --global-light: #e0e7ff;
+    --local-light: #d1fae5;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    padding: 0;
+  }
+  
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--global) 0%, #6366f1 100%);
+    color: white;
+    padding: 40px 0;
+    margin-bottom: 40px;
+    border-radius: 0 0 24px 24px;
+  }
+  
+  .header-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  
+  .header-subtitle {
+    font-size: 16px;
+    font-weight: 400;
+    opacity: 0.9;
+    max-width: 800px;
+    margin: 0 auto 20px;
+  }
+  
+  .period-badge {
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Summary Cards */
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  
+  .summary-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-top: 4px solid transparent;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .summary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+  }
+  
+  .summary-card.global {
+    border-top-color: var(--global);
+  }
+  
+  .summary-card.local {
+    border-top-color: var(--local);
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    font-size: 24px;
+  }
+  
+  .global .card-icon {
+    background-color: var(--global-light);
+    color: var(--global);
+  }
+  
+  .local .card-icon {
+    background-color: var(--local-light);
+    color: var(--local);
+  }
+  
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  .card-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  
+  .card-value {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  
+  .card-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  
+  /* Charts Section */
+  .section-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+  }
+  
+  .section-title i {
+    margin-right: 12px;
+    font-size: 20px;
+  }
+  
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 60px;
+  }
+  
+  @media (max-width: 1200px) {
+    .charts-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .chart-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  }
+
+  .chart-card:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: var(--border);
+    transform: translateY(-4px);
+  }
+
+  /* Efek khusus untuk chart canvas */
+  .chart-hover {
+    transition: transform 0.3s ease;
+  }
+
+  .chart-card:hover .chart-hover {
+    transform: scale(1.02);
+  }
+
+  /* Efek untuk bar chart saat hover */
+  .bar-hover-effect {
+    transition: all 0.3s ease;
+  }
+
+  .bar-hover-effect:hover {
+    cursor: pointer;
+  }
+  
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .chart-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .chart-container {
+    width: 100%;
+    height: 260px;
+    position: relative;
+  }
+  
+  .chart-explanation {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 16px;
+    line-height: 1.5;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  
+  /* Cluster Cards */
+  .cluster-section {
+    margin-bottom: 60px;
+  }
+  
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  
+  .section-badge {
+    background-color: var(--global-light);
+    color: var(--global);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .cluster-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+  }
+  
+  .cluster-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-top: 4px solid transparent;
+  }
+  
+  .cluster-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+  }
+  
+  .cluster-card.loyalty {
+    border-top-color: var(--loyalty);
+  }
+  
+  .cluster-card.risk {
+    border-top-color: var(--risk);
+  }
+  
+  .cluster-card.need-attention {
+    border-top-color: var(--need-attention);
+  }
+  
+  .cluster-header {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .cluster-title {
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+  
+  .cluster-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .loyalty .cluster-badge {
+    background-color: var(--loyalty-light);
+    color: var(--loyalty);
+  }
+  
+  .risk .cluster-badge {
+    background-color: var(--risk-light);
+    color: var(--risk);
+  }
+  
+  .need-attention .cluster-badge {
+    background-color: var(--need-attention-light);
+    color: var(--need-attention);
+  }
+  
+  .cluster-body {
+    padding: 0 24px 24px;
+  }
+  
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .metric-item {
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+  }
+  
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .metric-value {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .cluster-summary {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--border);
+  }
+  
+  .strategy-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .strategy-title i {
+    margin-right: 8px;
+    color: var(--text-secondary);
+  }
+  
+  .strategy-list {
+    list-style: none;
+  }
+  
+  .strategy-item {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+  }
+  
+  .strategy-item:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--text-muted);
+  }
+  
+  .loyalty .strategy-item:before {
+    background-color: var(--loyalty);
+  }
+  
+  .risk .strategy-item:before {
+    background-color: var(--risk);
+  }
+  
+  .need-attention .strategy-item:before {
+    background-color: var(--need-attention);
+  }
+
+  
+  
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px 0;
+    margin-top: 60px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  
+  /* Chart customizations */
+  canvas {
+    display: block;
+  }
+  
+  .legend-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+  }
+  
+  .legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 8px;
+  }
+  /* Override tinggi chart container HANYA untuk Bar Chart */
+  #bar-chart-container .chart-container {
+    height: 370px; /* Tinggi yang diinginkan */
+  }
+
+  .strategy-box.fancy {
+  margin-top: 40px;
+  padding: 25px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(120, 70, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  animation: fadeUp 0.9s ease-out;
+}
+
+/* Title + Subtitle */
+.strategy-header h3 {
+  color: #4b3ca7;
+  font-weight: 700;
+}
+
+.strategy-header .subtitle {
+  color: #555;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* List style */
+.strategy-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+.strategy-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  background: #f3edff;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #2a2a2a;
+  font-weight: 500;
+  box-shadow: 0 3px 8px rgba(120, 70, 255, 0.1);
+}
+
+.strategy-list li span {
+  color: #6a4dff;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Smooth Animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+  
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <div class="header-content">
+        <h1>Pengelompokan Pelanggan Berbasis RFM dengan Algoritma K-Means untuk Strategi Marketing Terpersonalisasi pada Industri Ritel</h1>
+        <p class="header-subtitle">Dashboard ini membantu Anda memahami pelanggan toko online dengan cara sederhana. Kami kelompokkan pelanggan menggunakan RFM dan K-Means, sehingga diperoleh hasil 3 cluster.</p>
+        <div class="period-badge">
+          <i class="fas fa-calendar-alt"></i> Data Periode 2009–2011
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card global">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-globe-americas"></i>
+          </div>
+          <div>
+            <h2 class="card-title">Pelanggan Global</h2>
+            <p class="card-subtitle">Semua negara</p>
+          </div>
+        </div>
+        <div class="card-value" id="globalTotal">0</div>
+        <p class="card-desc">Jumlah semua pelanggan dari berbagai negara.</p>
+      </div>
+      
+      <div class="summary-card local">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <div>
+            <h2 class="card-title">Pelanggan Lokal (UK)</h2>
+            <p class="card-subtitle">United Kingdom</p>
+          </div>
+        </div>
+        <div class="card-value" id="localTotal">0</div>
+        <p class="card-desc">Jumlah pelanggan khusus dari United Kingdom.</p>
+      </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="section-title">
+      <i class="fas fa-chart-bar"></i> Analisis Visual
+    </div>
+    
+    <div class="charts-grid">
+      <div class="chart-card" id="bar-chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">Perbandingan Cluster: Global vs Lokal</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="cmpCust"></canvas>
+        </div>
+        <p class="chart-explanation">Grafik ini membandingkan jumlah pelanggan di setiap cluster antara data global dan local. Lihat mana yang lebih banyak!</p>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">Distribusi Cluster Global</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="pie_global"></canvas>
+        </div>
+        <div id="legend_global" class="legend-container"></div>
+        <p class="chart-explanation">Pie chart menunjukkan persentase pelanggan di setiap cluster pada data global. Arahkan kursor pada diagram untuk melihat detail.</p>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">Distribusi Cluster Lokal (UK)</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="pie_local"></canvas>
+        </div>
+        <div id="legend_local" class="legend-container"></div>
+        <p class="chart-explanation">Pie chart menunjukkan persentase pelanggan di setiap cluster pada data lokal. Arahkan kursor pada diagram untuk melihat detail.</p>
+      </div>
+    </div>
+    
+    <!-- Global Cluster Analysis -->
+    <div class="cluster-section">
+      <div class="section-header">
+        <div class="section-title">
+          <i class="fas fa-globe"></i> Analisis Kluster Global
+        </div>
+        <div class="section-badge">3 Segmentasi Pelanggan Global</div>
+      </div>
+      
+     <div class="cluster-cards">
+
+  <!-- Kluster 0: Loyalty -->
+  <div class="cluster-card loyalty">
+    <div class="cluster-header">
+      <h3 class="cluster-title">Kluster 0: Loyalty</h3>
+      <span class="cluster-badge">Pelanggan Setia</span>
+    </div>
+
+    <div class="cluster-body">
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-label">Recency</div>
+          <div class="metric-value">32</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">Frequency</div>
+          <div class="metric-value">5.47</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">Monetary</div>
+          <div class="metric-value">1.7K</div>
+        </div>
+      </div>
+
+      <div class="cluster-summary">
+        "Aktif dan bernilai tinggi artinya pelanggan baru saja belanja dan aktif melakukan transaksi. Tergolong nilai belanja terbesar."
+      </div>
+    </div>
+  </div>
+
+  <!-- Kluster 1: At Risk -->
+  <div class="cluster-card risk">
+    <div class="cluster-header">
+      <h3 class="cluster-title">Kluster 1: At Risk</h3>
+      <span class="cluster-badge">Berisiko Tinggi</span>
+    </div>
+
+    <div class="cluster-body">
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-label">Recency</div>
+          <div class="metric-value">294</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">Frequency</div>
+          <div class="metric-value">1.35</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">Monetary</div>
+          <div class="metric-value">324</div>
+        </div>
+      </div>
+
+      <div class="cluster-summary">
+        "Hampir tidak ada artinya pelanggan sudah sangat lama tidak belanja dan nilai transaksi rendah"
+      </div>
+    </div>
+  </div>
+
+  <!-- Kluster 2: Need Attention -->
+  <div class="cluster-card need-attention">
+    <div class="cluster-header">
+      <h3 class="cluster-title">Kluster 2: Need Attention</h3>
+      <span class="cluster-badge">Perlu Perhatian</span>
+    </div>
+
+    <div class="cluster-body">
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-label">Recency</div>
+          <div class="metric-value">153</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">Frequency</div>
+          <div class="metric-value">2.21</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-label">Monetary</div>
+          <div class="metric-value">580</div>
+        </div>
+      </div>
+
+      <div class="cluster-summary">
+       "Kurang aktif artinya pelanggan dengan frekuensi belanja rendah, namun memiliki potensi pengeluaran menengah."
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="strategy-box fancy">
+  <div class="strategy-header">
+    <h3>Strategi Pemasaran yang Direkomendasikan</h3>
+    <p class="subtitle">Optimalkan retensi pelanggan dan tingkatkan penjualan</p>
+  </div>
+
+  <ul class="strategy-list">
+    <li><span>✔</span> Membuat program VIP yang menawarkan berbagai keuntungan khusus, seperti akses lebih awal (early bird) untuk produk baru, voucher eksklusif, serta promo yang hanya tersedia untuk pelanggan VIP. </li>
+    <li><span>✔</span> Berikan promo pemicu impulsif seperti diskon besar, flash sale, event comeback, dan voucher pembelian berikutnya, serta program tebus murah untuk meningkatkan nilai transaksi.</li>
+    <li><span>✔</span> Bundling Produk dengan menggabungkan produk yang paling diminati dengan produk yang kurang diminati dalam satu paket penjualan. </li>
+    <li><span>✔</span> Tawarkan hadiah khusus bagi pelanggan yang berbelanja pada momen tertentu seperti akhir tahun atau event khusus brand. </li>
+    <li><span>✔</span> Tampilkan testimoni dan konten edukasi yang menunjukkan nilai serta cara penggunaan produk untuk meningkatkan kepercayaan dan membantu pelanggan memahami manfaatnya.</li>
+  </ul>
+</div>
+
+
+    
+    <!-- Local Cluster Analysis -->
+    <div class="cluster-section">
+      <div class="section-header">
+        <div class="section-title">
+          <i class="fas fa-map-marker-alt"></i> Analisis Kluster Lokal (UK)
+        </div>
+        <div class="section-badge">3 Segmentasi Pelanggan Lokal</div>
+      </div>
+      
+      <div class="cluster-cards">
+        <div class="cluster-card risk">
+          <div class="cluster-header">
+            <h3 class="cluster-title">Kluster 0: At Risk</h3>
+            <span class="cluster-badge">Berisiko Tinggi</span>
+          </div>
+          <div class="cluster-body">
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <div class="metric-label">Recency</div>
+                <div class="metric-value">293</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">Frequency</div>
+                <div class="metric-value">1.36</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">Monetary</div>
+                <div class="metric-value">306</div>
+              </div>
+            </div>
+            
+            <div class="cluster-summary">
+              "Hampir tidak ada artinya pelanggan yang sudah sangat lama tidak melakukan pembelian dan memiliki nilai transaksi rendah."
+            </div>
+          
+          </div>
+        </div>
+        
+        <div class="cluster-card need-attention">
+          <div class="cluster-header">
+            <h3 class="cluster-title">Kluster 1: Need Attention</h3>
+            <span class="cluster-badge">Perlu Perhatian</span>
+          </div>
+          <div class="cluster-body">
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <div class="metric-label">Recency</div>
+                <div class="metric-value">154</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">Frequency</div>
+                <div class="metric-value">2.23</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">Monetary</div>
+                <div class="metric-value">547</div>
+              </div>
+            </div>
+            
+            <div class="cluster-summary">
+              "Kurang aktif artinya pelanggan dengan frekuensi belanja rendah, namun memiliki potensi pengeluaran menengah."
+            </div>
+          </div>
+        </div>
+        
+        <div class="cluster-card loyalty">
+          <div class="cluster-header">
+            <h3 class="cluster-title">Kluster 2: Loyalty</h3>
+            <span class="cluster-badge">Pelanggan Setia</span>
+          </div>
+          <div class="cluster-body">
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <div class="metric-label">Recency</div>
+                <div class="metric-value">32</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">Frequency</div>
+                <div class="metric-value">5.41</div>
+              </div>
+              <div class="metric-item">
+                <div class="metric-label">Monetary</div>
+                <div class="metric-value">1.6K</div>
+              </div>
+            </div>
+            
+            <div class="cluster-summary">
+              "Aktif dan bernilai tinggi artinya pelanggan baru saja belanja dan aktif melakukan transaksi. Tergolong nilai belanja terbesar."
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+<div class="strategy-box fancy">
+  <div class="strategy-header">
+    <h3>Strategi Pemasaran yang Direkomendasikan</h3>
+    <p class="subtitle">Optimalkan retensi pelanggan dan tingkatkan penjualan</p>
+  </div>
+
+  <ul class="strategy-list">
+    <li><span>✔</span> Promosi dan social proof dengan menggabungkan penggunaan testimoni, social proof, dan konten edukasi produk untuk meningkatkan kepercayaan pelanggan dan membantu mereka memahami manfaat produk. </li>
+    <li><span>✔</span> Promo penjualan & diskon seperti diskon tengah malam, voucher untuk pembelian berikutnya, dan bundling produk populer dengan produk kurang diminati untuk meningkatkan nilai transaksi.</li>
+    <li><span>✔</span> Mengadakan kompetisi berhadiah dengan syarat tertentu (misal minimum pembelian) dan program belanja berhadiah, terutama pada periode akhir tahun, untuk mendorong interaksi dan loyalitas pelanggan.</li>
+    <li><span>✔</span> Membuat  program loyalty VIP lokal yang memberikan keuntungan eksklusif, seperti akses awal ke produk baru dan penawaran khusus bagi member.</li>
+    <li><span>✔</span> Berikan hadiah atau penghargaan tahunan untuk pelanggan sebagai bentuk apresiasi, memperkuat hubungan jangka panjang, dan meningkatkan retensi.</li>
+  </ul>
+</div>
+
+
+<div class="footer">
+      <p>Dashboard Analisis Segmentasi Pelanggan RFM © 2010-2011</p>
+      <p>Data pelanggan dikelompokkan menggunakan algoritma K-Means berdasarkan parameter Recency, Frequency, Monetary</p>
+    </div>
+  </div>
+  <script>
+  let chartCmpCust, chartPieGlobal, chartPieLocal;
+
+  // Fungsi untuk memuat data global dari CSV
+  async function loadGlobal() {
+    try {
+      const res = await fetch("hasil_rfm_kmeans.csv");
+      console.log("Loading global CSV...");
+      if (!res.ok) {
+        console.error("Global CSV not found or error:", res.status);
+        throw new Error(`CSV Global not found (${res.status})`);
+      }
+      const text = await res.text();
+      console.log("Global CSV raw text (first 200 chars):", text.substring(0, 200));
+      const data = parseCSV(text);
+      console.log("Parsed global data:", data.length, "rows", data.slice(0, 3));
+      return data;
+    } catch (e) {
+      console.error("Error loading global CSV:", e);
+      return [];
+    }
+  }
+
+  // Fungsi untuk memuat data lokal dari CSV
+  async function loadLocal() {
+    try {
+      const res = await fetch("hasil_rfm_kmeans_lokal.csv");
+      console.log("Loading local CSV...");
+      if (!res.ok) {
+        console.error("Local CSV not found or error:", res.status);
+        throw new Error(`CSV Local not found (${res.status})`);
+      }
+      const text = await res.text();
+      console.log("Local CSV raw text (first 200 chars):", text.substring(0, 200));
+      const data = parseCSV(text);
+      console.log("Parsed local data:", data.length, "rows", data.slice(0, 3));
+      return data;
+    } catch (e) {
+      console.error("Error loading local CSV:", e);
+      return [];
+    }
+  }
+
+  // Fungsi untuk parsing CSV dengan lebih fleksibel
+  function parseCSV(text) {
+    try {
+      const lines = text.trim().split("\n");
+      console.log("CSV lines:", lines.length);
+      
+      if (lines.length < 2) {
+        console.warn("CSV file is empty or has only header");
+        return [];
+      }
+      
+      // Coba deteksi delimiter
+      const firstLine = lines[0];
+      const hasComma = firstLine.includes(',');
+      const hasTab = firstLine.includes('\t');
+      const hasSemicolon = firstLine.includes(';');
+      
+      let delimiter = ',';
+      if (hasTab) delimiter = '\t';
+      else if (hasSemicolon) delimiter = ';';
+      else if (hasComma) delimiter = ',';
+      
+      console.log("Detected delimiter:", delimiter === '\t' ? 'TAB' : delimiter);
+      
+      const data = [];
+      // Skip header (line 0)
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        const parts = line.split(delimiter);
+        
+        // Cari kolom cluster - coba beberapa kemungkinan
+        let clusterIndex = 10; // default
+        if (parts.length <= 10) {
+          // Jika tidak ada 11 kolom, coba cari di posisi lain
+          for (let j = parts.length - 1; j >= 0; j--) {
+            if (parts[j] && !isNaN(parseInt(parts[j])) && parseInt(parts[j]) >= 0 && parseInt(parts[j]) <= 2) {
+              clusterIndex = j;
+              break;
+            }
+          }
+        }
+        
+        // Pastikan kita punya cukup kolom
+        if (parts.length > clusterIndex) {
+          const cluster = parseInt(parts[clusterIndex]);
+          if (!isNaN(cluster) && cluster >= 0 && cluster <= 2) {
+            data.push({
+              customerID: parts[0] || '',
+              recency: parts[1] ? Number(parts[1]) : 0,
+              frequency: parts[2] ? Number(parts[2]) : 0,
+              monetary: parts[3] ? Number(parts[3]) : 0,
+              cluster: cluster
+            });
+          }
+        }
+      }
+      
+      console.log("Successfully parsed", data.length, "rows");
+      return data;
+      
+    } catch (error) {
+      console.error("Error parsing CSV:", error);
+      return [];
+    }
+  }
+
+  // Warna untuk chart
+  const globalColors = ["#7c3aed", "#ef4444", "#f59e0b"];
+  const localColors = ["#ef4444", "#f59e0b", "#10b981"];
+
+  // Tambahkan data fallback untuk testing
+  function createFallbackData() {
+    console.log("Using fallback data for testing");
+    return {
+      global: [
+        { cluster: 0 }, { cluster: 0 }, { cluster: 0 },
+        { cluster: 1 }, { cluster: 1 },
+        { cluster: 2 }, { cluster: 2 }, { cluster: 2 }
+      ],
+      local: [
+        { cluster: 0 }, { cluster: 0 },
+        { cluster: 1 }, { cluster: 1 }, { cluster: 1 },
+        { cluster: 2 }, { cluster: 2 }
+      ]
+    };
+  }
+
+  // Memuat data dan membuat chart
+  async function initializeDashboard() {
+    console.log("Initializing dashboard...");
+    
+    let global, local;
+    
+    try {
+      // Coba load data asli
+      [global, local] = await Promise.all([loadGlobal(), loadLocal()]);
+      
+      // Jika tidak ada data, gunakan fallback untuk testing
+      if (global.length === 0 || local.length === 0) {
+        console.log("No data loaded, using fallback data");
+        const fallback = createFallbackData();
+        global = fallback.global;
+        local = fallback.local;
+      }
+      
+    } catch (error) {
+      console.error("Failed to load data, using fallback:", error);
+      const fallback = createFallbackData();
+      global = fallback.global;
+      local = fallback.local;
+    }
+    
+    console.log("Global data count:", global.length);
+    console.log("Local data count:", local.length);
+    
+    // Hitung jumlah pelanggan per cluster
+    const g = {0: 0, 1: 0, 2: 0};
+    const l = {0: 0, 1: 0, 2: 0};
+    
+    global.forEach(x => { 
+      if (x.cluster !== undefined && g[x.cluster] !== undefined) {
+        g[x.cluster]++; 
+      }
+    });
+    
+    local.forEach(x => { 
+      if (x.cluster !== undefined && l[x.cluster] !== undefined) {
+        l[x.cluster]++; 
+      }
+    });
+    
+    console.log("Global clusters:", g);
+    console.log("Local clusters:", l);
+    
+    // Set total values
+    document.getElementById('globalTotal').textContent = global.length.toLocaleString();
+    document.getElementById('localTotal').textContent = local.length.toLocaleString();
+    
+    // Struktur data untuk chart
+    const globalClusters = {
+      loyalty: g[0] || 0,
+      risk: g[1] || 0,
+      attention: g[2] || 0
+    };
+    
+    const localClusters = {
+      risk: l[0] || 0,
+      attention: l[1] || 0,
+      loyalty: l[2] || 0
+    };
+    
+    console.log("Chart data - Global:", globalClusters);
+    console.log("Chart data - Local:", localClusters);
+    
+    // Buat atau update chart
+    createCharts(globalClusters, localClusters);
+  }
+
+  // Fungsi untuk membuat chart
+  function createCharts(globalClusters, localClusters) {
+    // Hancurkan chart lama jika ada
+    if (chartCmpCust) chartCmpCust.destroy();
+    if (chartPieGlobal) chartPieGlobal.destroy();
+    if (chartPieLocal) chartPieLocal.destroy();
+    
+    // Bar Chart: Comparison Global vs Local
+    const barCtx = document.getElementById('cmpCust');
+    if (!barCtx) {
+      console.error("Element 'cmpCust' not found!");
+      return;
+    }
+    
+    chartCmpCust = new Chart(barCtx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['Loyalty', 'At Risk', 'Need Attention'],
+        datasets: [
+          {
+            label: 'Global',
+            data: [globalClusters.loyalty, globalClusters.risk, globalClusters.attention],
+            backgroundColor: '#4f46e5',
+            borderRadius: 6,
+            borderWidth: 0
+          },
+          {
+            label: 'Lokal (UK)',
+            data: [localClusters.loyalty, localClusters.risk, localClusters.attention],
+            backgroundColor: '#10b981',
+            borderRadius: 6,
+            borderWidth: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              padding: 20,
+              usePointStyle: true,
+              pointStyle: 'circle',
+              color: '#1e293b',
+              font: {
+                family: "'Inter', sans-serif",
+                size: 13
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+            titleColor: '#f8fafc',
+            bodyColor: '#f8fafc',
+            padding: 12,
+            cornerRadius: 6,
+            callbacks: {
+              label: function(context) {
+                const label = context.dataset.label || '';
+                const value = context.raw || 0;
+                return `${label}: ${value.toLocaleString()} pelanggan`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              color: '#64748b',
+              font: { family: "'Inter', sans-serif", size: 13 }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(226, 232, 240, 0.5)' },
+            ticks: {
+              color: '#64748b',
+              font: { family: "'Inter', sans-serif", size: 13 },
+              callback: function(value) {
+                if (value >= 1000) return (value / 1000).toFixed(0) + 'k';
+                return value;
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // Pie Chart: Global Distribution
+    const pieGlobalCtx = document.getElementById('pie_global');
+    if (pieGlobalCtx) {
+      chartPieGlobal = new Chart(pieGlobalCtx.getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: ['Loyalty (Cluster 0)', 'At Risk (Cluster 1)', 'Need Attention (Cluster 2)'],
+          datasets: [{
+            data: [globalClusters.loyalty, globalClusters.risk, globalClusters.attention],
+            backgroundColor: globalColors,
+            borderWidth: 0,
+            hoverOffset: 15
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(30, 41, 59, 0.95)',
+              titleColor: '#f8fafc',
+              bodyColor: '#f8fafc',
+              padding: 12,
+              cornerRadius: 6,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                  return `${label}: ${value.toLocaleString()} pelanggan (${percentage}%)`;
+                }
+              }
+            }
+          },
+          cutout: '0%'
+        }
+      });
+    }
+    
+    // Pie Chart: Local Distribution
+    const pieLocalCtx = document.getElementById('pie_local');
+    if (pieLocalCtx) {
+      chartPieLocal = new Chart(pieLocalCtx.getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: ['At Risk (Cluster 0)', 'Need Attention (Cluster 1)', 'Loyalty (Cluster 2)'],
+          datasets: [{
+            data: [localClusters.risk, localClusters.attention, localClusters.loyalty],
+            backgroundColor: localColors,
+            borderWidth: 0,
+            hoverOffset: 15
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(30, 41, 59, 0.95)',
+              titleColor: '#f8fafc',
+              bodyColor: '#f8fafc',
+              padding: 12,
+              cornerRadius: 6,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                  return `${label}: ${value.toLocaleString()} pelanggan (${percentage}%)`;
+                }
+              }
+            }
+          },
+          cutout: '0%'
+        }
+      });
+    }
+    
+    // Update legends
+    updateLegends(globalClusters, localClusters);
+  }
+
+  // Update legends dengan data
+  function updateLegends(globalClusters, localClusters) {
+    const legendGlobal = document.getElementById('legend_global');
+    const legendLocal = document.getElementById('legend_local');
+    
+    if (legendGlobal) {
+      legendGlobal.innerHTML = `
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: ${globalColors[0]}"></span>
+          <span>Loyalty (Cluster 0) - ${globalClusters.loyalty.toLocaleString()} pelanggan</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: ${globalColors[1]}"></span>
+          <span>At Risk (Cluster 1) - ${globalClusters.risk.toLocaleString()} pelanggan</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: ${globalColors[2]}"></span>
+          <span>Need Attention (Cluster 2) - ${globalClusters.attention.toLocaleString()} pelanggan</span>
+        </div>
+      `;
+    }
+    
+    if (legendLocal) {
+      legendLocal.innerHTML = `
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: ${localColors[0]}"></span>
+          <span>At Risk (Cluster 0) - ${localClusters.risk.toLocaleString()} pelanggan</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: ${localColors[1]}"></span>
+          <span>Need Attention (Cluster 1) - ${localClusters.attention.toLocaleString()} pelanggan</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background-color: ${localColors[2]}"></span>
+          <span>Loyalty (Cluster 2) - ${localClusters.loyalty.toLocaleString()} pelanggan</span>
+        </div>
+      `;
+    }
+  }
+
+  // Inisialisasi dashboard saat halaman dimuat
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded, initializing dashboard...");
+    initializeDashboard();
+  });
+
+  // Juga coba inisialisasi setelah halaman sepenuhnya dimuat
+  window.addEventListener('load', function() {
+    console.log("Window loaded");
+  });
+  </script>
+</body>
+</html>
