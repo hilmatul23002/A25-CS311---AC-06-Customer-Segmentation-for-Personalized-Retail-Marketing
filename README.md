@@ -32,17 +32,22 @@ Proyek dijalankan menggunakan Google Colab, namun apabila ingin menjalankan seca
 * pip install scikit-learn
 ## Struktur Repository
 ├── public/
-│ └── hasil_rfm_kmeans.csv # Hasil clustering RFM (versi public)
-│
-├── gambar/
-│ └── (file visualisasi/gambar pendukung)
-│
-├── A25_CS311_CAPSTONE (1).ipynb # Notebook utama analisis & clustering
-├── Online Retail.xlsx # Dataset transaksi retail
-├── hasil_rfm_kmeans.csv # Hasil clustering seluruh data
-├── hasil_rfm_kmeans_lokal.csv # Hasil clustering data lokal
-├── index.html # Halaman visualisasi segmentasi
-└── README.md # Dokumentasi dan panduan replikasi
+
+│ └── hasil_rfm_kmeans.csv
+
+│ └── hasil_rfm_kmeans_lokal.csv
+
+├── A25_CS311_CAPSTONE (1).ipynb
+
+├── Online Retail.xlsx 
+
+├── hasil_rfm_kmeans.csv
+
+├── hasil_rfm_kmeans_lokal.csv
+
+├── index.html
+
+└── README.md
 ## Cara Menjalankan Proyek
 
 1. Buka file notebook `A25_CS311_CAPSTONE (1).ipynb)` menggunakan Google Colab atau melalui tautan beriku
@@ -92,80 +97,84 @@ Analisis segmentasi pelanggan pada proyek ini dilakukan melalui tahapan berikut:
    Menentukan nilai best K menggunakan elbow method dan silhoutte score.
    Menerapkan algoritma K-Means untuk mengelompokkan pelanggan berdasarkan nilai RFM.
     Hasilclustering divisualisasikan dalam bentuk grafik dan confusion matrix.
-11. **Insight dan Rekomendasi**  
+11. **Insight dan Rekomendasi**
+    Berisi hasiol / output yang diperoleh dan strategi marketing yang disarankan.
+    
 ## Output / Hasil
 **Interpretasi Cluster K-Means – Data Global**
-Cluster 0
 
-Recency rata-rata: 32 hari → pelanggan baru belanja
+**Cluster 0**
 
-Frequency: 5.47 → cukup sering
-
-Monetary: 1.726 → sangat tinggi
+* Recency rata-rata: 32 hari → pelanggan baru belanja
+* Frequency: 5.47 → cukup sering
+* Monetary: 1.726 → sangat tinggi
 
 Kesimpulan: Ini adalah kelompok pelanggan aktif bernilai tinggi. Mereka baru belanja, sering bertransaksi, dan mengeluarkan total belanja terbesar. Kelompok ini sejalan dengan segmen seperti Loyalty atau Big Spenders.
-Cluster 1
 
-Recency rata-rata: 294 hari → sudah lama sekali tidak belanja
+**Cluster 1**
 
-Frequency: 1.35 → jarang
-
-Monetary: 324 → terendah
+* Recency rata-rata: 294 → sudah lama sekali tidak belanja
+* Frequency: 1.35 → jarang
+* Monetary: 324 → terendah
 
 Kesimpulan: Kelompok ini masuk kategori pelanggan berisiko tinggi. Mereka hampir tidak aktif lagi dan cenderung mendekati churn. Mirip dengan segmen At Risk atau Need Attention.
-Cluster 2
 
-Recency rata-rata: 153 hari → cukup lama tidak bertransaksi
+**Cluster 2**
 
-Frequency: 2.21 → jarang
-
-Monetary: 580 → menengah
+* Recency rata-rata: 153 hari → cukup lama tidak bertransaksi
+* Frequency: 2.21 → jarang
+* Monetary: 580 → menengah
 
 Kesimpulan: Kelompok ini adalah pelanggan kurang aktif. Aktivitas mereka menurun dalam beberapa waktu terakhir dan total belanja mereka tidak terlalu besar.
 
 
 **Interpretasi Cluster K-Means – Data Lokal**
-Cluster 0
 
-Recency: 293 hari → sangat lama tidak belanja
+**Cluster 0**
 
-Frequency: 1.36 → rendah
-
-Monetary: 306 → terendah
+* Recency: 293 hari → sangat lama tidak belanja
+* Frequency: 1.36 → rendah
+* Monetary: 306 → terendah
 
 Kesimpulan: Karakteristiknya sangat mirip dengan Cluster 1 global. Ini adalah kelompok pelanggan berisiko tinggi yang sudah hampir tidak melakukan transaksi lagi.
-Cluster 1
 
-Recency: 154 hari
+**Cluster 1**
 
-Frequency: 2.23
-
-Monetary: 547
+* Recency: 154 hari
+* Frequency: 2.23
+* Monetary: 547
 
 Kesimpulan: Ini adalah kelompok pelanggan kurang aktif. Mereka masih berpotensi diaktifkan kembali karena belum sepenuhnya hilang.
-Cluster 2
 
-Recency: 32 hari
+**Cluster 2**
 
-Frequency: 5.41
-
-Monetary: 1.592
+* Recency: 32 hari
+* Frequency: 5.41
+*Monetary: 1.592
 
 Kesimpulan: Ini kelompok pelanggan aktif bernilai tinggi, sama seperti Cluster 0 pada data global. Mereka rutin melakukan transaksi dan memberikan kontribusi nilai terbesar.
 
 ## Strategi Marketing
 **1. Strategi Pelanggan Global**
-Membuat program VIP yang menawarkan berbagai keuntungan khusus, seperti akses lebih awal (early bird) untuk produk baru, voucher eksklusif, serta promo yang hanya tersedia untuk pelanggan VIP.
-Berikan promo pemicu impulsif seperti diskon besar, flash sale, event comeback, dan voucher pembelian berikutnya, serta program tebus murah untuk meningkatkan nilai transaksi.
-Bundling Produk dengan menggabungkan produk yang paling diminati dengan produk yang kurang diminati dalam satu paket penjualan.
-Tawarkan hadiah khusus bagi pelanggan yang berbelanja pada momen tertentu seperti akhir tahun atau event khusus brand.
-Tampilkan testimoni dan konten edukasi yang menunjukkan nilai serta cara penggunaan produk untuk meningkatkan kepercayaan dan membantu pelanggan memahami manfaatnya.
+* Membuat program VIP yang menawarkan berbagai keuntungan khusus, seperti akses lebih awal (early bird) untuk produk baru, voucher eksklusif, serta promo yang hanya tersedia untuk pelanggan VIP.
+* Berikan promo pemicu impulsif seperti diskon besar, flash sale, event comeback, dan voucher pembelian berikutnya, serta program tebus murah untuk meningkatkan nilai transaksi.
+* Bundling Produk dengan menggabungkan produk yang paling diminati dengan produk yang kurang diminati dalam satu paket penjualan.
+* Tawarkan hadiah khusus bagi pelanggan yang berbelanja pada momen tertentu seperti akhir tahun atau event khusus brand.
+* Tampilkan testimoni dan konten edukasi yang menunjukkan nilai serta cara penggunaan produk untuk meningkatkan kepercayaan dan membantu pelanggan memahami manfaatnya.
 
 **2 Strategi Pelanggan Lokal**
 
-Promosi dan social proof dengan menggabungkan penggunaan testimoni, social proof, dan konten edukasi produk untuk meningkatkan kepercayaan pelanggan dan membantu mereka memahami manfaat produk.
-Promo penjualan & diskon seperti diskon tengah malam, voucher untuk pembelian berikutnya, dan bundling produk populer dengan produk kurang diminati untuk meningkatkan nilai transaksi.
-Mengadakan kompetisi berhadiah dengan syarat tertentu (misal minimum pembelian) dan program belanja berhadiah, terutama pada periode akhir tahun, untuk mendorong interaksi dan loyalitas pelanggan.
-Membuat program loyalty VIP lokal yang memberikan keuntungan eksklusif, seperti akses awal ke produk baru dan penawaran khusus bagi member.
-Berikan hadiah atau penghargaan tahunan untuk pelanggan sebagai bentuk apresiasi, memperkuat hubungan jangka panjang, dan meningkatkan retensi.
+* Promosi dan social proof dengan menggabungkan penggunaan testimoni, social proof, dan konten edukasi produk untuk meningkatkan kepercayaan pelanggan dan membantu mereka memahami manfaat produk.
+* Promo penjualan & diskon seperti diskon tengah malam, voucher untuk pembelian berikutnya, dan bundling produk populer dengan produk kurang diminati untuk meningkatkan nilai transaksi.
+* Mengadakan kompetisi berhadiah dengan syarat tertentu (misal minimum pembelian) dan program belanja berhadiah, terutama pada periode akhir tahun, untuk mendorong interaksi dan loyalitas pelanggan.
+* Membuat program loyalty VIP lokal yang memberikan keuntungan eksklusif, seperti akses awal ke produk baru dan penawaran khusus bagi member.
+* Berikan hadiah atau penghargaan tahunan untuk pelanggan sebagai bentuk apresiasi, memperkuat hubungan jangka panjang, dan meningkatkan retensi.
 
+## Website
+Seluruh hasil dari proses ini di tampilkan melaui dashboard dalam bentuk website.
+
+Dashboard diperoleh dari mendeploy fila index.html menggunakan netlify.
+
+Berikut adalah tautan website:
+
+https://segmentasic331.netlify.app/
