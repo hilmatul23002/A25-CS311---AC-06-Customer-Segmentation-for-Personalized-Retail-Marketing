@@ -17,6 +17,7 @@ Rumusan masalah proyek ini:
 Dataset diambil melalui Kaggle.
 
 Berikut adalah tautan dataset yang digunakan
+
 https://www.kaggle.com/code/akashchola/customer-segmentation-rfm-model-k-means/input
 ## Tools & Dependencies
 ### Berikut adalah beberapa langkah yang dilakukan dalam menyelesaikan proyek ini
@@ -30,13 +31,26 @@ Proyek dijalankan menggunakan Google Colab, namun apabila ingin menjalankan seca
 * pip install seaborn
 * pip install scikit-learn
 ## Struktur Repository
-
+├── public/
+│ └── hasil_rfm_kmeans.csv # Hasil clustering RFM (versi public)
+│
+├── gambar/
+│ └── (file visualisasi/gambar pendukung)
+│
+├── A25_CS311_CAPSTONE (1).ipynb # Notebook utama analisis & clustering
+├── Online Retail.xlsx # Dataset transaksi retail
+├── hasil_rfm_kmeans.csv # Hasil clustering seluruh data
+├── hasil_rfm_kmeans_lokal.csv # Hasil clustering data lokal
+├── index.html # Halaman visualisasi segmentasi
+└── README.md # Dokumentasi dan panduan replikasi
 ## Cara Menjalankan Proyek
 
-1. Buka file notebook `Customer_Segmentation_RFM_KMeans.ipynb` menggunakan Google Colab
-2. Jalankan seluruh cell secara berurutan dari atas ke bawah
-3. Dataset akan otomatis diunduh dari Kaggle menggunakan library `kagglehub`
-4. Hasil segmentasi pelanggan ditampilkan dalam bentuk:
+1. Buka file notebook `A25_CS311_CAPSTONE (1).ipynb)` menggunakan Google Colab atau melalui tautan beriku
+
+   https://github.com/hilmatul23002/A25-CS311---AC-06-Customer-Segmentation-for-Personalized-Retail-Marketing/blob/main/A25_CS311_CAPSTONE%20(1).ipynb
+3. Jalankan seluruh cell secara berurutan dari atas ke bawah
+4. Dataset akan otomatis diunduh dari Kaggle menggunakan library `kagglehub`
+5. Hasil segmentasi pelanggan ditampilkan dalam bentuk:
    - Segmentasi RFM
    - Cluster K-Means
    - Confusion matriks untuk RFM dan K-Means
